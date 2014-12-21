@@ -20,7 +20,7 @@ Since Coveo offers a unified result list, people tend to want an *All Content* t
 The first step is to build the page with the standard markup. Since we don't want any tabs, we can remove the `coveo-tab-section` section.
  
 
-Then we should find the trigger facets and the dependant facets. Let's say that `objecttype` is the trigger facet and we want to show case related facets when a user selects `Case` in the type facet.
+Then we should find the trigger facets and the dependent facets. Let's say that `@objecttype` is the trigger facet and we want to show case related facets when a user selects `Case` in the type facet.
 
 We start with the following markup. If we reload the page, we will see 3 facets.
 
@@ -34,14 +34,15 @@ We start with the following markup. If we reload the page, we will see 3 facets.
 
 {% endhighlight %}
 
-In order to achieve our goal, the trigger facet doesn't need additional information, but the dependant facet needs those two:
-- The trigger facet id (defaults to field name if not provided)
-- The trigger facet value
+In order to achieve our goal, the trigger facet doesn't need additional information, but the dependent facet needs those two:
 
-In order to remain consistent with the framework, I decided to add those 2 options as data attributes on the dependant facets. I choosed to call those attributes `data-depends-on-id` and `data-depends-on-value`.
+- The trigger facet id (defaults to field name if not provided).
+- The trigger facet value.
+
+In order to remain consistent with the framework, I decided to add those 2 options as data attributes on the dependent facets. I choosed to call those attributes `data-depends-on-id` and `data-depends-on-value`.
 
 
-Let's add this to our markup.
+Let's add this to our facets.
 
 {% highlight html %}
 
@@ -59,17 +60,17 @@ Let's add this to our markup.
 
 {% endhighlight %}
 
-Now if we reload the page, we still see 3 facets. Let's do some javascript now.
+If we reload the page, we still see 3 facets. It's now time for some javascript.
 
 ## Writing the JavaScript code
 
-Now that we have all the information needed, we can start writing the javascript code. The first thing we need to do is to disable the dependant facets, so we don't see them when we load the page. This can be done with this simple code snippet.
+Now that we have all the information needed, we can start writing the javascript code. The first thing we need to do is to disable the dependent facets, so we don't see them when we load the page. This can be done with this simple code snippet.
 
 {% highlight javascript %}
 $(function() {
   //Select all the facets with a dependency attribute
   $('.CoveoFacet[data-depends-on-id]').each(function(index, facet) {
-    $(facet).coveo().disable(); //Disable them
+    $(facet).coveo('disable');
   });
 });
 {% endhighlight %}
@@ -81,7 +82,7 @@ Now that we disabled them, let's add some code to re-enable them depending on st
     var id = $(facet).data('dependsOnId');
     var value = $(facet).data('dependsOnValue');
     $(facet).coveo('disable');
-    //Add a state change event to detect the selection of the trigger facet
+    //Add a state change event to detect a selection in the trigger facet
     $('#search').on('state:change:f:' + id, function(e, args) {
       $(facet).addClass('coveo-empty');
       //Check if the value is in the list of selected values
@@ -98,9 +99,9 @@ Now that we disabled them, let's add some code to re-enable them depending on st
   });
 {% endhighlight %}
 
-The first thing that we had to do was to add a state change event listener. The idea here is to be as precise as possible to avoid some useless checks. Now we know that our callback will be invoked when the state of our trigger facet changes.
+The first thing that we had to do was to add a state change event listener. The idea here is to be as precise as possible to avoid some useless checks.
 
-Once we know that the state of our trigger facet changed, we need to check if the value we depends on is selected. Depending on that, we can easily enable of disable the facet using it's public methods. 
+Now that we know that the state of our trigger facet changed, we need to check if the value we depends on is selected. Depending on that, we can easily enable of disable the facet using it's public methods. 
 
  
 You can learn more about the [state events](https://developers.coveo.com/display/public/JsSearch/State) and the [facet's public methods](https://developers.coveo.com/display/public/JsSearch/Facet+Component#FacetComponent-Methods) in our documentation.
